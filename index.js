@@ -77,7 +77,6 @@ var ConfPost = require('./lib/conf_post');
 var ConfUrl = require('./lib/conf_url');
 var imgUrlGenerator = require('./lib/url_gen');
 
-
 function replaceImgUrl(conf, data) {
 	var baseUrl = conf.base_url;
 
@@ -93,23 +92,18 @@ function replaceImgUrl(conf, data) {
 }
 
 function encrypt(conf, data) {
-	var password = conf.password;
-	var ciphertext = CryptoJS.AES.encrypt(data.content, password);
-	var txt = ciphertext.toString();
-	data.content = '<div id="enc_content">' + txt + '</div>';
+	var passphrase = conf.password;
+	var encrypted = CryptoJS.AES.encrypt(data.content, passphrase).toString();
+	var hmac = CryptoJS.HmacSHA256(encrypted, CryptoJS.SHA256(passphrase)).toString();
+	var transitmessage = hmac + encrypted;
+	data.content = '<div id="enc_content" style="display:none;">' + transitmessage + '</div>';
+	data.content = data.content + '<div id="security"><span>请输入密码</span><div class="input-group"><input type="text" class="form-control" aria-label="请输入密码" id="passphrase"/><div class="input-group-btn"><button type="button" class="btn btn-default" onclick="decryptAES()">解密</button></div></div></div>';
 	data.content = data.content + '<script src="/js/crypto-js.js"></script>';
-	data.content = data.content + '<script>'+
-		'var pwd = window.prompt("please input password","");' + 
-		'var txt = document.getElementById("enc_content").innerHTML;' +
-		'var bytes  = CryptoJS.AES.decrypt(txt, pwd);' +
-		'var plaintext = bytes.toString(CryptoJS.enc.Utf8);' +
-		'document.getElementById("enc_content").innerHTML = plaintext' +
-		'</script>';
+	data.content = data.content + '<script src="/js/custom-js.js"></script>';
 	log.info(data.title + " encryped");
 }
 
 hexo.extend.filter.register('after_post_render', function(data){
-
 	var confPost = ConfPost.create(ConfGlobal, data);
 	log.debug("replace:" + confPost.replace_img_url);
 	if (confPost.replace_img_url == true) {
@@ -123,12 +117,12 @@ hexo.extend.filter.register('after_post_render', function(data){
 	return data;
 });
 
-
 // copy the encrypt js file
 hexo.extend.filter.register('after_generate', function(){
 	log.info("copy crypto-js.js to public/js/");
 	hexofs.copyFile(hexo.base_dir + 'node_modules/hexo-encrypt/crypto-js.js', 
 			hexo.base_dir + 'public/js/crypto-js.js');
+	log.info("copy custom-js.js to public/js/");
+	hexofs.copyFile(hexo.base_dir + 'node_modules/hexo-encrypt/custom-js.js', 
+			hexo.base_dir + 'public/js/custom-js.js');
 });
-
-
