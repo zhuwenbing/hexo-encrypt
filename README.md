@@ -34,7 +34,24 @@ encrypt:
   qiniu_sk: your qiniu secrect key 
   img_url_ttl: 3600  # 3600 second, the ttl for qiniu img url
   type: qiniu # or base64, if base64, the base_url, qiniu_ak, qiniu_sk and img_url_ttl is unnecessary
+  template: 'user defined decrpyt ui template' # optional, it's html template include html and js. in js, you should call doDecrypt(password, onErrorCallbackFunc) with you password
+```
 
+for template, the next is an example:
+```
+  template: ' <input type="text" style=" border-radius: 5px; border-style: groove; height: 30px; width: 50%; cursor: auto; font-size: 102%; color: currentColor; outline: none; text-overflow: initial; padding-left: 5px;">  
+              <input type="submit" value="decrypt" onclick="decrypt()" style=" width: 58px; height: 34px; border-radius: 5px; background-color: white; border-style: solid; color: currentColor; "> 
+			  <div id="enc_error" style=" display: inline-block; color: #d84527; font: large; "></div>
+              <script> 
+				var onError = function(error) { 
+					$("#enc_error")[0].innerHTML = "password error!"; 
+				}; 
+                function decrypt() { 
+                    var passwd = $("#enc_passwd input")[0].value; 
+                    console.log(passwd); 
+                    doDecrypt(passwd, onError); 
+                } 
+              </script>' 
 ```
 
 ### config post
@@ -45,6 +62,7 @@ encrypt: true
 enc_replace_url: true # this indicate wether the plugin should replace the img url in this post, this option has a higher priority than `replace_all_url` in _config.yml
 enc_pwd: 123456 # this is the way to set encrypt password for this post
 enc_img_type: qiniu # or base64
+enc_template: 'user defined decrpyt ui template' # same as template in _config.yml but has a higher priority
 ```
 
 then run `hexo g` and `hexo s`, open the encrypted post, 
@@ -55,7 +73,7 @@ you will find that, the page request you to enter a password.
 ---
 ---
 
-#the config rul detail
+# the config rule detail
 
 # the base rule
 configs for this plugin in _config.yml are all in encrypt: scope
@@ -117,6 +135,18 @@ the base_url is only support for qiniu
 so, if the url encode type is qiniu and url is not a full path
 then connect the base_url and the url
 otherwise ignore the base_url
+
+---------------
+
+# changelog
+
+## 20170213
+* add template support for decrypt UI, an default template is provided
+* change decrypt UI
+
+## 20170404
+* add onError callback, this enable the decrypt UI display some error message when decrypt failed like password error, etc.
+* fix `Error: Malformed UTF-8 data` error when password is false or decrypt fail
 
 
 
