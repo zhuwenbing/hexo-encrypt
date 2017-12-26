@@ -72,7 +72,6 @@ var log = require('hexo-log')({
   silent: false
 });
 
-var RootUrl = hexo.config.root;
 var ConfGlobal = require('./lib/conf_global')(hexo.config.encrypt, hexo.base_dir);
 var ConfPost = require('./lib/conf_post');
 var ConfUrl = require('./lib/conf_url');
